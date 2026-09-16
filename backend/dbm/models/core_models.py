@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, Table, Column
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 # Промежуточная таблица для свзяи блюд и тегов
@@ -52,6 +52,10 @@ class Dish(Base):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
+
+    #Если мы берем теги у блюда, с помощью relationship
+    #мы сразу берем все зависимости из таблицы dish_tags
+    tags: Mapped[list["Tag"]] = relationship(secondary=dish_tags, lazy="selectin")
 
 # Таблица свайпов
 class Swipe(Base):

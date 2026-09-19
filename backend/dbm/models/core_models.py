@@ -66,6 +66,9 @@ class Swipe(Base):
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id", ondelete="CASCADE"))
     is_liked: Mapped[bool] = mapped_column(Boolean)
 
+    #нужно для проверки, учитывался ли этот свайп для пересчета вектора
+    is_processed: Mapped[bool] = mapped_column(Boolean)
+
 # ТАблица сохраненного рациона
 class RationItem(Base):
     __tablename__ = "ration_items"
@@ -74,3 +77,20 @@ class RationItem(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id", ondelete="CASCADE"))
     added_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
+
+# Таблица для вектора пользователя
+class UserVector(Base):
+    __tablename__ = "user_vector"
+
+    #адресс строки будет состоять из комбинации ID пользователя + ключ, так гарантируется что
+    #связка имя пользователя + "мясо"(к примеру), будет встречаться только раз в таблице
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
+
+    weight: Mapped[Float] = mapped_column(Float, deafult=5.0)
+    
+
+
+
+
+

@@ -1,6 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, RootModel
 
-class TagsSchema(BaseModel):
+class TagsShema(BaseModel):
     id: int
     name: str
 
@@ -10,7 +10,9 @@ class DishesSchema(BaseModel):
     id: int
     name: str
 
-    tags: list[TagsSchema] = []
+    tags: list[TagsShema] = []
 
     model_config = ConfigDict(from_attributes=True)
 
+class UserVectorSchema(RootModel[dict[str, float]]):
+    pass

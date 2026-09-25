@@ -3,6 +3,10 @@ from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, Table,
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
+"""
+Файл со всеми таблицами и их атрибутами в БД
+"""
+
 # Промежуточная таблица для свзяи блюд и тегов
 dish_tags = Table(
     "dish_tags",

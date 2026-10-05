@@ -12,6 +12,10 @@ class DishManager:
 
     async def get_candidate_dishes(self, session: AsyncSession,
                                    user_id: int, limit: int = 20) -> list[dict]:
+        """
+        берет из таблицы dishes блюда, которые еще не видел пользователь,
+        и отправляет их ядру в виде списка сллварей
+        """
         query = (
                     select(Swipe)
                     .where(Swipe.user_id == user_id)
@@ -34,14 +38,10 @@ class DishManager:
 
         return candidates_dishes
 
-
-
-
-
-
-    pass
-
     async def get_user_vector(self, session: AsyncSession, user_id,):
+        """
+        отправляет вектор пользователя ядру, в виде словаря {мясо : 8}
+        """
 
         query = (
                     select(Tag.name, UserVector.weight)
@@ -56,6 +56,18 @@ class DishManager:
         return valid_vector
 
 
-    async def save_swipe():
-        return
+    async def save_swipe(self, session: AsyncSession, m_dish_id, m_user_id, m_is_liked):
+        """
+        Сохраняет свайп конкретного пользователя, со всеми данными, был ли лайкнут,
+        и тп.
+        """
+
+        query = Swipe(
+            user_id = m_user_id,
+            dish_id = m_dish_id,
+            is_liked = m_is_liked,
+            is_processed = False
+        )
+        session.add(query)
+        return True
     

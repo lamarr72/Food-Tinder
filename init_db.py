@@ -1,15 +1,19 @@
-# импорт движка (подключение к бд) + базовый класс + все модели (для SQLAlchemy)
+import asyncio
 from backend.dbm.database import engine
 from backend.dbm.models.base import Base
-from backend.dbm.models.core_models import User, Dish, Swipe, Tag, RationItem, dish_tags
+# Импортируем ВСЕ классы, чтобы SQLAlchemy их увидела
+from backend.dbm.models.core_models import (
+    User, Tag, Dish, Swipe, RationItem, UserVector,
+    dish_tags, Ingredient, DishImage, RecipeStep,
+    dish_ingredients, user_unwanted_ingredients
+)
 
-def create_tables():
-    print("Connecting to DB and creating tables...")
-
-    #перевод классов в SQL и отправка в PostgreSQL
-    Base.metadata.create_all(bind=engine)
-
-    print("The tables was created")
+async def create_tables():
+    print("Connecting to DB and recreating tables (Async mode)...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    print("The tables were successfully created!")
 
 if __name__ == "__main__":
-    create_tables()
+    asyncio.run(create_tables())

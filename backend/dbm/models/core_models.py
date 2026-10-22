@@ -119,7 +119,6 @@ class RationItem(Base):
     meal_type: Mapped[MealType] = mapped_column(SQLEnum(MealType))
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-# --- КЛАСС МАТВЕЯ (Оставляем без изменений) ---
 class UserVector(Base):
     __tablename__ = "user_vector"
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)

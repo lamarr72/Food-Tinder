@@ -11,7 +11,7 @@ class DishManager:
     """
 
     async def get_candidate_dishes(self, session: AsyncSession,
-                                   user_id: int, limit: int = 20) -> list[dict]:
+                                   user_id: int, limit: int = 200) -> list[dict]:
         """
         берет из таблицы dishes блюда, которые еще не видел пользователь,
         и отправляет их ядру в виде списка словарей

@@ -14,7 +14,7 @@ class FeedService:
     def __init__(self, db_manager):
         self.db = db_manager
 
-    async def get_feed(self, session, user_id: int, limit: int = 20) -> list[dict]:
+    async def get_feed(self, session, user_id: int, limit: int = 200) -> list[dict]:
         """
         Функция генерации ленты рекомендаций пользователя
         """
@@ -40,5 +40,6 @@ class FeedService:
             scored_dishes.append(dish)
 
         scored_dishes.sort(key=lambda x: x["relevance_score"], reverse=True)
+        scored_dishes = scored_dishes[:20]
 
         return scored_dishes

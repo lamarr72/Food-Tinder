@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from core_models import Dish, Swipe, Ingredient, Tag, UserVector, user_unwanted_ingredients, ReactionType
-from schemas import DishesSchema, UserVectorSchema
+from .core_models import Dish, Swipe, Ingredient, Tag, UserVector, user_unwanted_ingredients, ReactionType
+from .schemas import DishesSchema, UserVectorSchema
 
 class DishManager:
     """

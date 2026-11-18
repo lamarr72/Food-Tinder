@@ -1,5 +1,7 @@
 import enum
 from datetime import datetime, timezone, date
+
+from pydantic import BaseModel
 from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, Table, Column, Date, Enum as SQLEnum, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -59,6 +61,7 @@ class User(Base):
     # Поля для автаризации, отвечают за экран входа и регистрацию
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=True)
     session_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=True)
     
     # Поля регистрационнх данных, отображаются в профиле
     name: Mapped[str] = mapped_column(String(50), nullable=True)
@@ -182,3 +185,4 @@ class UserVector(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
     weight: Mapped[float] = mapped_column(Float, default=5.0)
+

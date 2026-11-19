@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, RootModel, Field, EmailStr
 from datetime import date
+from backend.dbm.models.core_models import ReactionType
 
 
 class TagsShema(BaseModel):
@@ -98,3 +99,20 @@ class UserProfileResponse(BaseModel):
     weight: Optional[float]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SwipeRequest(BaseModel):
+    """
+    Схема для POST-запроса.
+    Если фронтенд пришлет reaction="super_like", FastAPI автоматически
+    выдаст ошибку 422, так как такого значения нет в ReactionType.
+    """
+    user_id: int
+    dish_id: int
+    reaction: ReactionType
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+

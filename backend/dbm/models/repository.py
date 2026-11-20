@@ -1,7 +1,8 @@
+from pydantic.v1 import EmailStr
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from .core_models import Dish, Swipe, Ingredient, Tag, UserVector, user_unwanted_ingredients, ReactionType
+from .core_models import Dish, Swipe, Ingredient, Tag, UserVector, user_unwanted_ingredients, ReactionType, User
 from .schemas import DishesSchema, UserVectorSchema
 
 class DishManager:
@@ -148,3 +149,49 @@ class DishManager:
             swipe.is_processed = True
 
         await session.commit()
+
+
+class UserManager:
+
+    async def get_by_id(self, session: AsyncSession, user_id: int):
+
+        query = (select(User).where(User.id == user_id))
+        result = await session.execute(query)
+
+        return result.scalar_one_or_none()
+
+
+    async def get_by_session_id(self, session: AsyncSession, session_id: str):
+
+        query = (select(User).where(User.session_id == session_id))
+        result = await session.execute(query)
+
+        return result.scalar_one_or_none()
+
+
+    async def get_by_email(self, session: AsyncSession, email: EmailStr) -> User:
+        query = (select(User).where(User.email == email))
+        result = await session.execute(query)
+
+        return result.scalar_one_or_none()
+
+    async def create_guest(self, session: AsyncSession, session_id: str):
+        user = User(session_id = session_id)
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+
+        return user
+
+    async def create_registered_user(self, session: AsyncSession, session_id: str,
+                                     email: EmailStr, hashed_password: str):
+
+        user = User(
+            session_id = session_id,
+            email = email,
+            hashed_password = hashed_password
+        )
+
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)

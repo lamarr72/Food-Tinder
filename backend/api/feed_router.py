@@ -1,30 +1,19 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from dbm.models.core_models import ReactionType
-from dbm.models.repository import DishManager
-from core.Feed import FeedService
-from core.Swipe import SwipeService
+from backend.dbm.models.core_models import ReactionType
+from backend.dbm.models.repository import DishManager
+from backend.core.Feed import FeedService
+from backend.core.Swipe import SwipeService
+from backend.dbm.models.schemas import SwipeRequest
 
-from dbm.database import get_db_session
+from backend.dbm.database import get_db_session
 
 db_manager = DishManager()
 feed_service = FeedService(db_manager)
 swipe_service = SwipeService(db_manager)
 
 router = APIRouter(prefix="/feed", tags=["Лента Рекомендаций"])
-
-
-
-class SwipeRequest(BaseModel):
-    """
-    Схема для POST-запроса. 
-    Если фронтенд пришлет reaction="super_like", FastAPI автоматически 
-    выдаст ошибку 422, так как такого значения нет в ReactionType.
-    """
-    user_id: int
-    dish_id: int
-    reaction: ReactionType
 
 
 #Эндпоинты

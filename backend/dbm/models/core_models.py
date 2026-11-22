@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime, timezone, date
+
 from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, Table, Column, Date, Enum as SQLEnum, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,7 +35,7 @@ dish_ingredients = Table(
     Column("unit", String(20), nullable=False, default="г")
 )
 
-# Промежуточная таблица для черного списка продуктов 
+# Промежуточная таблица: позволяет пользователю добавлять продукты в чёрный список
 user_unwanted_ingredients = Table(
     "user_unwanted_ingredients",
     Base.metadata,
@@ -51,7 +52,7 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Поля для авторизации
+    # Поля для авторизации, отвечают за экран входа и регистрацию
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=True)
     session_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)

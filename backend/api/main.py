@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
-from api.feed_router import router as feed_router
+from backend.core.exceptions import AppError
+from backend.api.feed_router import router as feed_router
+from backend.api.auth_router import router as auth_router
 
 app = FastAPI(
     title="Food Tinder API",
@@ -19,7 +23,15 @@ app.add_middleware(
 )
 
 app.include_router(feed_router)
+app.include_router(auth_router)
 
 @app.get("/", tags=["Проверка связи"])
 async def root():
     return {"status": "ok", "message": "Сервер Food Tinder успешно работает!"}
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )

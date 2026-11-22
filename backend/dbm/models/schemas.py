@@ -5,7 +5,7 @@ from datetime import date
 from backend.dbm.models.core_models import ReactionType
 
 
-class TagsShema(BaseModel):
+class TagsSchema(BaseModel):
     id: int
     name: str
 
@@ -21,13 +21,11 @@ class DishesSchema(BaseModel):
     rating: float
 
     calories: int
-    proteins: int
-    fats: int
-    carbs: int
+    proteins: float
+    fats: float
+    carbs: float
 
-    photos: list[str] = []
-
-    tags: list[TagsShema] = []
+    tags: list[TagsSchema] = []
 
     model_config = ConfigDict(from_attributes=True)
 

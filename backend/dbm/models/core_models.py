@@ -1,8 +1,6 @@
 import enum
 from datetime import datetime, timezone, date
 
-from pydantic import BaseModel
-from pydantic.v1 import EmailStr
 from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, Table, Column, Date, Enum as SQLEnum, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,12 +34,8 @@ dish_ingredients = Table(
     Column("amount", String(50), nullable=True)
 )
 
+# Промежуточная таблица: позволяет пользователю добавлять продукты в чёрный список
 user_unwanted_ingredients = Table(
-    """
-    Промежуточная таблца, позволяет пользователю добавлять
-    продукты в черный список
-    """
-
     "user_unwanted_ingredients",
     Base.metadata,
     Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
@@ -59,8 +53,8 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Поля для автаризации, отвечают за экран входа и регистрацию
-    email: Mapped[EmailStr] = mapped_column(String(100), unique=True, nullable=True)
+    # Поля для авторизации, отвечают за экран входа и регистрацию
+    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=True)
     session_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=True)
     
@@ -79,7 +73,7 @@ class Tag(Base):
 
 class Ingredient(Base):
     """
-    Таблица всех возможных игридиентов для блюда
+    Таблица всех возможных ингредиентов для блюда
     """
 
     __tablename__ = "ingredients"

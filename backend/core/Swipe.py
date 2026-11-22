@@ -1,14 +1,16 @@
-#Логика обработки лайк/дизлайк
+# Логика обработки лайк/дизлайк
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from dbm.models.core_models import ReactionType
+from backend.dbm.models.core_models import ReactionType
 
 BATCH_SIZE = 5
+
+
 class SwipeService:
     """
     Логика обработки реакций пользователя.
     Управляет сохранением свайпов и решает, когда 
-    нужно обьновлять вектор пользователя
+    нужно обновлять вектор пользователя
     """
 
     def __init__(self, db_manager):
@@ -28,9 +30,9 @@ class SwipeService:
             m_reaction=reaction
         )
 
-        unrpocessed_count = await self.db.count_unprocessed_swipes(session, user_id)
+        unprocessed_count = await self.db.count_unprocessed_swipes(session, user_id)
 
-        if unrpocessed_count >= BATCH_SIZE:
+        if unprocessed_count >= BATCH_SIZE:
             await self.db.process_vector_batch(session, user_id)
 
         return True

@@ -1,4 +1,3 @@
-from pydantic.v1 import EmailStr
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +6,7 @@ from .schemas import DishesSchema, UserVectorSchema
 
 class DishManager:
     """
-    класс отвечающий за перевод инофрмации из БД в ядро.
+    класс отвечающий за перевод информации о блюдах из БД в ядро.
     с помощью pydantic валидирует и приводит данные в вид, понятный ядру
     """
 
@@ -52,6 +51,7 @@ class DishManager:
 
         return candidates_dishes
 
+
     async def get_user_vector(self, session: AsyncSession, user_id,):
         """
         отправляет вектор пользователя ядру, в виде словаря {мясо : 8}
@@ -78,13 +78,13 @@ class DishManager:
         и тп.
         """
 
-        query = Swipe(
+        new_swipe = Swipe(
             user_id = m_user_id,
             dish_id = m_dish_id,
             reaction = m_reaction,
             is_processed = False
         )
-        session.add(query)
+        session.add(new_swipe)
         await session.commit()
         return True
 
@@ -152,8 +152,13 @@ class DishManager:
 
 
 class UserManager:
-
-    async def get_by_id(self, session: AsyncSession, user_id: int):
+    """
+    Класс для передачи данных пользователя из БД в ядро
+    """
+    async def get_by_id(self, session: AsyncSession, user_id: int) -> User:
+        """
+        возвращает пользователя по его id
+        """
 
         query = (select(User).where(User.id == user_id))
         result = await session.execute(query)
@@ -161,7 +166,10 @@ class UserManager:
         return result.scalar_one_or_none()
 
 
-    async def get_by_session_id(self, session: AsyncSession, session_id: str):
+    async def get_by_session_id(self, session: AsyncSession, session_id: str) -> User:
+        """
+        возвращает пользователя по его id сессии
+        """
 
         query = (select(User).where(User.session_id == session_id))
         result = await session.execute(query)
@@ -169,13 +177,24 @@ class UserManager:
         return result.scalar_one_or_none()
 
 
-    async def get_by_email(self, session: AsyncSession, email: EmailStr) -> User:
+    async def get_by_email(self, session: AsyncSession, email: str) -> User:
+        """
+        возвращает пользователя по его почте
+        """
+
         query = (select(User).where(User.email == email))
         result = await session.execute(query)
 
         return result.scalar_one_or_none()
 
+
     async def create_guest(self, session: AsyncSession, session_id: str):
+        """
+        создает запись в БД, объект User, с одним заполненным полем session_id,
+        такие обьекты создаются для неавторизованных пользователей, при первом
+        посищении сайта 
+        """
+
         user = User(session_id = session_id)
         session.add(user)
         await session.commit()
@@ -183,8 +202,13 @@ class UserManager:
 
         return user
 
+
     async def create_registered_user(self, session: AsyncSession, session_id: str,
-                                     email: EmailStr, hashed_password: str):
+                                     email: str, hashed_password: str):
+        """
+        Создает запись для зарегистрированного пользователя в БД, Обьект User,
+        с заполненными полями email, hashed_password, session_id
+        """
 
         user = User(
             session_id = session_id,
@@ -195,3 +219,22 @@ class UserManager:
         session.add(user)
         await session.commit()
         await session.refresh(user)
+
+        return user
+
+
+    async def attach_credentials(self, session: AsyncSession, user: User, 
+                                 email: str, hashed_password: str) -> User:
+        """
+        Функция нужна для перевода записи гостя в БД в зарегистрированного пользователя
+        при первом посищении сайта вызывается функция create_guest, создается запись в БД
+        если, пользователь в дальнейшем захочет зарегистрироваться, новая запись не создается,
+        заместо этого дополняется запись которая была сделана после вызова функции create_guest
+        """
+        
+        user.email = email
+        user.hashed_password = hashed_password
+        await session.commit()
+        await session.refresh(user)
+
+        return user

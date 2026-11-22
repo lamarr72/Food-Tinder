@@ -25,4 +25,8 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     Открывает сессию при входящем запросе и безопасно закрывает её после ответа.
     """
     async with SessionLocal() as session:
-        yield session
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise

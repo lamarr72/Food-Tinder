@@ -17,3 +17,6 @@ __pycache__/
 
 # Временные файлы SQLTools
 *.session.sql
+
+# Необходимые файлы
+repomix-output.md

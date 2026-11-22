@@ -30,15 +30,12 @@ dish_ingredients = Table(
     Base.metadata,
     Column("dish_id", ForeignKey("dishes.id", ondelete="CASCADE"), primary_key=True),
     Column("ingredient_id", ForeignKey("ingredients.id", ondelete="CASCADE"), primary_key=True),
-    Column("amount", String(50), nullable=True)
+    Column("quantity", Float, nullable=False, default=0.0),
+    Column("unit", String(20), nullable=False, default="г")
 )
 
+# Промежуточная таблица для черного списка продуктов 
 user_unwanted_ingredients = Table(
-    """
-    Промежуточная таблца, позволяет пользователю добавлять
-    продукты в черный список
-    """
-
     "user_unwanted_ingredients",
     Base.metadata,
     Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
@@ -47,21 +44,22 @@ user_unwanted_ingredients = Table(
 
 # --- ОСНОВНЫЕ МОДЕЛИ ---
 
-
 class User(Base):
     """
     Главная таблица пользователя
     """
-
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Поля для автаризации, отвечают за экран входа и регистрацию
+    # Поля для авторизации
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=True)
     session_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
     
-    # Поля регистрационнх данных, отображаются в профиле
+    # Поля регистрационных данных
     name: Mapped[str] = mapped_column(String(50), nullable=True)
+    gender: Mapped[str] = mapped_column(String(20), nullable=True)
+    avatar_url: Mapped[str] = mapped_column(String(255), nullable=True)
     birth_date: Mapped[date] = mapped_column(Date, nullable=True)
     height: Mapped[int] = mapped_column(Integer, nullable=True)
     weight: Mapped[float] = mapped_column(Float, nullable=True)
@@ -75,9 +73,8 @@ class Tag(Base):
 
 class Ingredient(Base):
     """
-    Таблица всех возможных игридиентов для блюда
+    Таблица всех возможных ингредиентов для блюда
     """
-
     __tablename__ = "ingredients"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
@@ -94,22 +91,24 @@ class Dish(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     price: Mapped[int] = mapped_column(Integer, nullable=True)
 
-    # КБЖУ (Calories - Калории, Proteins - Белок, Fats - Жири, Carbs - Углеводы)
+    # КБЖУ
     calories: Mapped[int] = mapped_column(Integer, nullable=True)
     proteins: Mapped[float] = mapped_column(Float, nullable=True)
     fats: Mapped[float] = mapped_column(Float, nullable=True)
     carbs: Mapped[float] = mapped_column(Float, nullable=True)
 
-    # Время готовки блюда, его оценка, оценка отображается в виде 5-ти звезд
+    # Время готовки блюда, сложность, оборудование и оценка
     cooking_time: Mapped[int] = mapped_column(Integer, default=0)
+    difficulty: Mapped[int] = mapped_column(Integer, default=1)
+    equipment: Mapped[str] = mapped_column(String(255), nullable=True)
     rating: Mapped[float] = mapped_column(Float, default=0.0)
 
-    # id автора блюда, доступно ли оно для других пользователей, и время создания
+    # Системные поля
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-    # теги, ингредиенты, ссылки на картинку и шаги рецептов
+    # Связи
     tags: Mapped[list["Tag"]] = relationship(secondary=dish_tags, lazy="selectin")
     ingredients: Mapped[list["Ingredient"]] = relationship(secondary=dish_ingredients, lazy="selectin")
     images: Mapped[list["DishImage"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
@@ -117,11 +116,8 @@ class Dish(Base):
 
 class DishImage(Base):
     """
-    Таблица картинки рецетпа, хранит id картинки, id блюда к которому она привязана,
-    ссылку на картинку
+    Таблица картинки рецепта
     """
-
-
     __tablename__ = "dish_images"
     id: Mapped[int] = mapped_column(primary_key=True)
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id", ondelete="CASCADE"))
@@ -129,8 +125,7 @@ class DishImage(Base):
 
 class RecipeStep(Base):
     """
-    Таблица пошагового руководства, активируется по кнопке показать рецепт
-    и выводит на экран поля step_number, description
+    Таблица пошагового руководства
     """
     __tablename__ = "recipe_steps"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -152,8 +147,8 @@ class Swipe(Base):
 
     dish: Mapped["Dish"] = relationship()
 
-    # Поле которое помечает свайп, учитан ли он в векторе интереса пользователя или еще нет
     is_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class RationItem(Base):
     """
@@ -164,19 +159,13 @@ class RationItem(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id", ondelete="CASCADE"))
     meal_type: Mapped[MealType] = mapped_column(SQLEnum(MealType))
+    day_number: Mapped[int] = mapped_column(Integer, default=1)
+    portion_grams: Mapped[int] = mapped_column(Integer, default=100)
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-
 
 class UserVector(Base):
     """
-    Таблица пользовательского вектора, для каждого тега хранит значение,
-    соответсвующее заинтересованности пользователя в конкретном теге
-
-    Атрибуты:
-        user_id (int): id пользователя.
-        tag_id (int): id тега.
-        weight (float): значение заинтерисованности конкретного пользователя
-        конкретном теге блюда.     
+    Таблица пользовательского вектора
     """
     __tablename__ = "user_vector"
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)

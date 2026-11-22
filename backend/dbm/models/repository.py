@@ -17,6 +17,29 @@ class DishManager:
     с помощью pydantic валидирует и приводит данные в вид, понятный ядру
     """
 
+    async def get_user_favorites(self, session: AsyncSession, user_id: int) -> list[dict]:
+        """
+        возвращает полные карточки блюд, которые пользователь добавил в избранное
+        """
+        query = (
+            select(Dish)
+            .join(Swipe, Swipe.dish_id == Dish.id)
+            .options(
+                selectinload(Dish.tags),
+                selectinload(Dish.images),
+                selectinload(Dish.steps)
+            )
+            .where(
+                Swipe.user_id == user_id,
+                Swipe.reaction == ReactionType.FAVORITE
+            )
+            .distinct()
+        )
+        result = await session.execute(query)
+        dishes = result.scalars().all()
+
+        return await self._format_dishes(session, dishes)
+    
     async def _format_dishes(self, session: AsyncSession, dishes: list[Dish]) -> list[dict]:
         """
         подтягивает ингредиенты с количеством и собирает итоговые словари по схеме

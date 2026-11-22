@@ -20,19 +20,14 @@ router = APIRouter(prefix="/feed", tags=["Лента Рекомендаций"])
 
 @router.get("/")
 async def get_personal_feed(
-    user_id: int, 
-    limit: int = 20, 
-    session: AsyncSession = Depends(get_db_session)
-): 
-    """
-    Эндпоинт для выдачи ленты.
-    Запрос с телефона: GET /feed/?user_id=1&limit=20
-    """
-    dishes = await feed_service.get_feed(session=session, user_id=user_id, limit=limit)
-    
+    user_id: int,
+    session: AsyncSession = Depends(get_db_session),
+):
+    dishes = await feed_service.get_feed(session=session, user_id=user_id)
+
     return {
         "status": "success",
-        "data": dishes
+        "data": dishes,
     }
 
 

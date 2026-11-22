@@ -5,5 +5,12 @@ asyncpg
 greenlet
 pydantic[email]
 python-dotenv
-passlib[bcrypt]
+bcrypt
+PyJWT
 python-multipart
+
+# Тестирование
+pytest
+pytest-asyncio
+httpx
+aiosqlite

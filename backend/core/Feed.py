@@ -9,17 +9,20 @@
 # на основе этих величин векторов будет выстраиваться лента.
 
 
-class FeedService: 
+CANDIDATE_POOL_SIZE = 200
+FEED_SIZE = 20
 
+
+class FeedService:
     def __init__(self, db_manager):
         self.db = db_manager
 
-    async def get_feed(self, session, user_id: int, limit: int = 200) -> list[dict]:
-        """
-        Функция генерации ленты рекомендаций пользователя
-        """
-
-        dishes = await self.db.get_candidate_dishes(session, user_id, limit)
+    async def get_feed(self, session, user_id: int) -> list[dict]:
+        dishes = await self.db.get_candidate_dishes(
+            session,
+            user_id,
+            CANDIDATE_POOL_SIZE,
+        )
         if not dishes:
             return []
 
@@ -27,12 +30,10 @@ class FeedService:
         user_vector = user_vector_obj.root
 
         scored_dishes = []
-        for dish in dishes: 
+        for dish in dishes:
             score = 0.0
-
             for tag in dish["tags"]:
                 tag_name = tag["name"]
-
                 weight = user_vector.get(tag_name, 5.0)
                 score += weight
 
@@ -40,6 +41,4 @@ class FeedService:
             scored_dishes.append(dish)
 
         scored_dishes.sort(key=lambda x: x["relevance_score"], reverse=True)
-        scored_dishes = scored_dishes[:20]
-
-        return scored_dishes
+        return scored_dishes[:FEED_SIZE]

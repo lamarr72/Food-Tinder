@@ -71,21 +71,27 @@ class AuthService:
         hashed_password = self.hash_password(password)
         guest_user = await self.user_manager.get_by_session_id(session, session_id)
 
-        if guest_user is not None:
+        if guest_user is not None and guest_user.email is None:
             user = await self.user_manager.attach_credentials(
                 session=session,
-                user=guest_user, 
-                email=email, 
-                hashed_password=hashed_password
-                )
-            
-        else:
+                user=guest_user,
+                email=email,
+                hashed_password=hashed_password,
+            )
+        elif guest_user is None:
             user = await self.user_manager.create_registered_user(
                 session=session,
                 session_id=session_id,
                 email=email,
-                hashed_password=hashed_password
+                hashed_password=hashed_password,
             )
+        else:
+            user = await self.user_manager.create_registered_user(
+                session=session,
+                session_id=None,
+                email=email,
+                hashed_password=hashed_password,
+            )    
 
         return self.create_access_token(user_id=user.id, is_guest=False)
 

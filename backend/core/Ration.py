@@ -1,7 +1,7 @@
 # считает КБЖУ и цену с учетом реального веса порции (portion_grams / 100), группирует по дням и делает автоподбор рациона
 import random
 from sqlalchemy.ext.asyncio import AsyncSession
-from dbm.models.core_models import MealType
+from backend.dbm.models.core_models import MealType
 
 # соответствие типа приема пищи и тега в БД
 MEAL_TO_TAG = {
